@@ -60,3 +60,8 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 builddirectory/
+
+# Local environment overrides (never commit credentials)
+application-local.properties
+*.env
+.env
