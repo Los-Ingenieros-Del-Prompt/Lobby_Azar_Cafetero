@@ -1,4 +1,4 @@
-package com.aguardientes.azarcafetero.lobby.model;
+package com.aguardientes.azarcafetero.lobby.domain.model;
 
 // TEMPORARY ENUM, WILL IMPLEMENT ACTUAL LATER
 
