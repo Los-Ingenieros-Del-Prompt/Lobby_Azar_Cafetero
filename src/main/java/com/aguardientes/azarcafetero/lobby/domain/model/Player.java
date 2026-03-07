@@ -20,7 +20,7 @@ public class Player {
     }
 
     public static Player create(UUID id, String username) {
-        return new Player(id, username, null, BigDecimal.ZERO);
+        return new Player(id, username, null, new BigDecimal("500"));
     }
 
     public static Player from(UUID id, String username, String avatar, BigDecimal balance) {

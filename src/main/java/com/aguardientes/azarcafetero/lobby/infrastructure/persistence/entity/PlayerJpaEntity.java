@@ -21,6 +21,7 @@ public class PlayerJpaEntity {
     private String username;
 
     @Getter @Setter
+    @Column(name = "avatar_url")
     private String avatar;
 
     @Getter @Setter
