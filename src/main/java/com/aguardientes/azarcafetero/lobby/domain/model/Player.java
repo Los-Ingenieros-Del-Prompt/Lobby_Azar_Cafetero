@@ -7,24 +7,26 @@ public class Player {
 
     private final UUID id;
     private final String username;
+    private final String displayName;
     private final String avatar;
     private BigDecimal balance;
     private PlayerStatus status;
 
-    public Player(UUID id, String username, String avatar, BigDecimal balance) {
+    public Player(UUID id, String username, String displayName, String avatar, BigDecimal balance) {
         this.id = id;
         this.username = username;
+        this.displayName = displayName;
         this.avatar = avatar;
         this.balance = balance;
         this.status = PlayerStatus.OFFLINE;
     }
 
     public static Player create(UUID id, String username) {
-        return new Player(id, username, null, new BigDecimal("500"));
+        return new Player(id, username, username, null, new BigDecimal("500"));
     }
 
-    public static Player from(UUID id, String username, String avatar, BigDecimal balance) {
-        return new Player(id, username, avatar, balance);
+    public static Player from(UUID id, String username, String displayName, String avatar, BigDecimal balance) {
+        return new Player(id, username, displayName, avatar, balance);
     }
 
     public void goOnline() {
@@ -43,6 +45,7 @@ public class Player {
 
     public UUID getId() { return id; }
     public String getUsername() { return username; }
+    public String getDisplayName() { return displayName != null ? displayName : username; }
     public String getAvatar() { return avatar; }
     public BigDecimal getBalance() { return balance; }
     public PlayerStatus getStatus() { return status; }

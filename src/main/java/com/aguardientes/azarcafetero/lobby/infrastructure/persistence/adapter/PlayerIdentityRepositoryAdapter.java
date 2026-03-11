@@ -30,16 +30,29 @@ public class PlayerIdentityRepositoryAdapter implements PlayerRepository {
 
     @Override
     public void save(Player player) {
-        PlayerJpaEntity entity = new PlayerJpaEntity();
-        entity.setId(player.getId());
-        entity.setUsername(player.getUsername());
-        entity.setAvatar(player.getAvatar());
-        entity.setBalance(player.getBalance());
-        entity.setStatus(player.getStatus());
+        PlayerJpaEntity entity = toEntity(player);
         jpaRepository.save(entity);
     }
 
+    @Override
+    public void saveNew(Player player) {
+        PlayerJpaEntity entity = toEntity(player);
+        entity.markAsNew();
+        jpaRepository.save(entity);
+    }
+
+    private PlayerJpaEntity toEntity(Player player) {
+        PlayerJpaEntity entity = new PlayerJpaEntity();
+        entity.setId(player.getId());
+        entity.setUsername(player.getUsername());
+        entity.setDisplayName(player.getDisplayName());
+        entity.setAvatar(player.getAvatar());
+        entity.setBalance(player.getBalance());
+        entity.setStatus(player.getStatus());
+        return entity;
+    }
+
     private Player toDomain(PlayerJpaEntity entity) {
-        return Player.from(entity.getId(), entity.getUsername(), entity.getAvatar(), entity.getBalance());
+        return Player.from(entity.getId(), entity.getUsername(), entity.getDisplayName(), entity.getAvatar(), entity.getBalance());
     }
 }

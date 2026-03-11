@@ -41,15 +41,19 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = header.substring(7);
 
         try {
-            String subject = Jwts.parser()
+            var claims = Jwts.parser()
                     .verifyWith(signingKey)
                     .build()
                     .parseSignedClaims(token)
-                    .getPayload()
-                    .getSubject();
+                    .getPayload();
+
+            String subject = claims.getSubject();
+            String name = claims.get("name", String.class);
+            String avatarUrl = claims.get("avatarUrl", String.class);
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(subject, null, List.of());
+            auth.setDetails(new JwtAuthDetails(name, avatarUrl));
             SecurityContextHolder.getContext().setAuthentication(auth);
 
         } catch (JwtException e) {
