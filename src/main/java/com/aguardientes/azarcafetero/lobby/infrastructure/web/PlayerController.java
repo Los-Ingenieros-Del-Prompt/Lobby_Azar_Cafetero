@@ -4,6 +4,7 @@ import com.aguardientes.azarcafetero.lobby.domain.model.PlayerIdentityDTO;
 import com.aguardientes.azarcafetero.lobby.domain.port.in.CheckZeroBalanceUseCase;
 import com.aguardientes.azarcafetero.lobby.domain.port.in.GetPlayerIdentityUseCase;
 import com.aguardientes.azarcafetero.lobby.domain.port.in.GetUpdatedBalanceUseCase;
+import com.aguardientes.azarcafetero.lobby.infrastructure.security.JwtAuthDetails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +32,8 @@ public class PlayerController {
 
     @GetMapping("/identity")
     public ResponseEntity<PlayerIdentityDTO> getIdentity(Authentication auth) {
-        PlayerIdentityDTO identity = getPlayerIdentityUseCase.execute(auth.getName());
+        JwtAuthDetails details = auth.getDetails() instanceof JwtAuthDetails d ? d : new JwtAuthDetails(null, null);
+        PlayerIdentityDTO identity = getPlayerIdentityUseCase.execute(auth.getName(), details.getName(), details.getAvatarUrl());
         return ResponseEntity.ok(identity);
     }
 

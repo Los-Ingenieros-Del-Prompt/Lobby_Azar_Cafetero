@@ -12,4 +12,6 @@ public interface PlayerRepository {
     Optional<Player> findByUsername(String username);
 
     void save(Player player);
+
+    void saveNew(Player player);
 }

@@ -4,6 +4,10 @@ import com.aguardientes.azarcafetero.lobby.domain.model.Player;
 import com.aguardientes.azarcafetero.lobby.domain.model.PlayerIdentityDTO;
 import com.aguardientes.azarcafetero.lobby.domain.port.in.GetPlayerIdentityUseCase;
 import com.aguardientes.azarcafetero.lobby.domain.port.out.PlayerRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 public class GetPlayerIdentityService implements GetPlayerIdentityUseCase {
 
@@ -14,9 +18,26 @@ public class GetPlayerIdentityService implements GetPlayerIdentityUseCase {
     }
 
     @Override
-    public PlayerIdentityDTO execute(String username) {
+    public PlayerIdentityDTO execute(String username, String name, String avatarUrl) {
         Player player = playerRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Player not found: " + username));
-        return new PlayerIdentityDTO(player.getUsername(), player.getAvatar(), player.getBalance());
+                .orElseGet(() -> findOrCreate(username, name, avatarUrl));
+        return new PlayerIdentityDTO(player.getDisplayName(), player.getAvatar(), player.getBalance());
+    }
+
+    private Player findOrCreate(String username, String name, String avatarUrl) {
+        try {
+            return registerNewPlayer(username, name, avatarUrl);
+        } catch (DataIntegrityViolationException e) {
+            // Concurrent request already created the player — just fetch it
+            return playerRepository.findByUsername(username)
+                    .orElseThrow(() -> new IllegalStateException("Player creation failed for: " + username));
+        }
+    }
+
+    private Player registerNewPlayer(String username, String name, String avatarUrl) {
+        String displayName = (name != null && !name.isBlank()) ? name : username;
+        Player newPlayer = Player.from(UUID.randomUUID(), username, displayName, avatarUrl, new BigDecimal("500"));
+        playerRepository.saveNew(newPlayer);
+        return newPlayer;
     }
 }
