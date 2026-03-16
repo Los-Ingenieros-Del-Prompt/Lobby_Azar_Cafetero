@@ -43,11 +43,10 @@ public class BuildingController {
         }
     }
 
-    @GetMapping("/pisos/{pisoId}/mesas")
-    public ResponseEntity<List<TableDTO>> getFloorTables(@PathVariable UUID pisoId) {
-        List<TableDTO> tables = getFloorTablesUseCase.execute(pisoId);
+    @GetMapping("/floors/{floorId}/tables")
+    public ResponseEntity<List<TableDTO>> getFloorTables(@PathVariable("floorId") UUID floorId) {
+        List<TableDTO> tables = getFloorTablesUseCase.execute(floorId);
         return ResponseEntity.ok(tables);
     }
 
 }
-
