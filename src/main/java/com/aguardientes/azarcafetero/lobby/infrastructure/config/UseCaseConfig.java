@@ -1,20 +1,10 @@
 package com.aguardientes.azarcafetero.lobby.infrastructure.config;
 
-import com.aguardientes.azarcafetero.lobby.domain.port.in.CheckZeroBalanceUseCase;
-import com.aguardientes.azarcafetero.lobby.domain.port.in.GetBuildingStructureUseCase;
-import com.aguardientes.azarcafetero.lobby.domain.port.in.GetFloorTablesUseCase;
-import com.aguardientes.azarcafetero.lobby.domain.port.in.GetPlayerByIdUseCase;
-import com.aguardientes.azarcafetero.lobby.domain.port.in.GetPlayerIdentityUseCase;
-import com.aguardientes.azarcafetero.lobby.domain.port.in.GetUpdatedBalanceUseCase;
-import com.aguardientes.azarcafetero.lobby.domain.port.out.BuildingRepository;
-import com.aguardientes.azarcafetero.lobby.domain.port.out.PlayerRepository;
-import com.aguardientes.azarcafetero.lobby.domain.port.out.TableRepository;
-import com.aguardientes.azarcafetero.lobby.domain.service.CheckZeroBalanceService;
-import com.aguardientes.azarcafetero.lobby.domain.service.GetBuildingStructureService;
-import com.aguardientes.azarcafetero.lobby.domain.service.GetFloorTablesService;
-import com.aguardientes.azarcafetero.lobby.domain.service.GetPlayerByIdService;
-import com.aguardientes.azarcafetero.lobby.domain.service.GetPlayerIdentityService;
-import com.aguardientes.azarcafetero.lobby.domain.service.GetUpdatedBalanceService;
+import com.aguardientes.azarcafetero.lobby.domain.port.in.*;
+import com.aguardientes.azarcafetero.lobby.domain.port.out.*;
+import com.aguardientes.azarcafetero.lobby.domain.service.*;
+import com.aguardientes.azarcafetero.lobby.infrastructure.client.WalletClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,13 +12,14 @@ import org.springframework.context.annotation.Configuration;
 public class UseCaseConfig {
 
     @Bean
-    public GetBuildingStructureUseCase getBuildingStructureUseCase(BuildingRepository buildingRepository) {
-        return new GetBuildingStructureService(buildingRepository);
+    public WalletClient walletClient(@Value("${wallet.service.url}") String walletServiceUrl) {
+        return new WalletClient(walletServiceUrl);
     }
 
     @Bean
-    public GetPlayerIdentityUseCase getPlayerIdentityUseCase(PlayerRepository playerRepository) {
-        return new GetPlayerIdentityService(playerRepository);
+    public GetPlayerIdentityUseCase getPlayerIdentityUseCase(PlayerRepository playerRepository,
+                                                             WalletClient walletClient) {
+        return new GetPlayerIdentityService(playerRepository, walletClient);
     }
 
     @Bean
@@ -42,6 +33,11 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public GetBuildingStructureUseCase getBuildingStructureUseCase(BuildingRepository buildingRepository) {
+        return new GetBuildingStructureService(buildingRepository);
+    }
+
+    @Bean
     public GetFloorTablesUseCase getFloorTablesUseCase(TableRepository tableRepository) {
         return new GetFloorTablesService(tableRepository);
     }
@@ -51,4 +47,3 @@ public class UseCaseConfig {
         return new GetPlayerByIdService(playerRepository);
     }
 }
-

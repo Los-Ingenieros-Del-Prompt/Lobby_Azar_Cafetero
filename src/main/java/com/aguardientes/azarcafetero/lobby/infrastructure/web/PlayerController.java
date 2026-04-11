@@ -3,17 +3,11 @@ package com.aguardientes.azarcafetero.lobby.infrastructure.web;
 import com.aguardientes.azarcafetero.lobby.domain.model.Player;
 import com.aguardientes.azarcafetero.lobby.domain.model.PlayerDTO;
 import com.aguardientes.azarcafetero.lobby.domain.model.PlayerIdentityDTO;
-import com.aguardientes.azarcafetero.lobby.domain.port.in.CheckZeroBalanceUseCase;
-import com.aguardientes.azarcafetero.lobby.domain.port.in.GetPlayerByIdUseCase;
-import com.aguardientes.azarcafetero.lobby.domain.port.in.GetPlayerIdentityUseCase;
-import com.aguardientes.azarcafetero.lobby.domain.port.in.GetUpdatedBalanceUseCase;
+import com.aguardientes.azarcafetero.lobby.domain.port.in.*;
 import com.aguardientes.azarcafetero.lobby.infrastructure.security.JwtAuthDetails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -39,9 +33,22 @@ public class PlayerController {
     }
 
     @GetMapping("/identity")
-    public ResponseEntity<PlayerIdentityDTO> getIdentity(Authentication auth) {
-        JwtAuthDetails details = auth.getDetails() instanceof JwtAuthDetails d ? d : new JwtAuthDetails(null, null);
-        PlayerIdentityDTO identity = getPlayerIdentityUseCase.execute(auth.getName(), details.getName(), details.getAvatarUrl());
+    public ResponseEntity<PlayerIdentityDTO> getIdentity(
+            Authentication auth,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        JwtAuthDetails details = auth.getDetails() instanceof JwtAuthDetails d
+                ? d : new JwtAuthDetails(null, null);
+
+        // Extraer solo el token sin el "Bearer " prefix
+        String jwtToken = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwtToken = authHeader.substring(7);
+        }
+
+        PlayerIdentityDTO identity = getPlayerIdentityUseCase.execute(
+                auth.getName(), details.getName(), details.getAvatarUrl(), jwtToken
+        );
         return ResponseEntity.ok(identity);
     }
 
