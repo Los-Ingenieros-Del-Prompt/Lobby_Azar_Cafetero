@@ -1,49 +1,68 @@
 package com.aguardientes.azarcafetero.lobby.infrastructure.config;
-
+ 
 import com.aguardientes.azarcafetero.lobby.domain.port.in.*;
 import com.aguardientes.azarcafetero.lobby.domain.port.out.*;
 import com.aguardientes.azarcafetero.lobby.domain.service.*;
-import com.aguardientes.azarcafetero.lobby.infrastructure.client.WalletClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+ 
 @Configuration
 public class UseCaseConfig {
-
+ 
+    // — identidad —
     @Bean
-    public WalletClient walletClient(@Value("${wallet.service.url}") String walletServiceUrl) {
-        return new WalletClient(walletServiceUrl);
+    public GetPlayerIdentityUseCase getPlayerIdentityUseCase(PlayerRepository playerRepository) {
+        return new GetPlayerIdentityService(playerRepository);
     }
-
+ 
     @Bean
-    public GetPlayerIdentityUseCase getPlayerIdentityUseCase(PlayerRepository playerRepository,
-                                                             WalletClient walletClient) {
-        return new GetPlayerIdentityService(playerRepository, walletClient);
+    public GetPlayerByIdUseCase getPlayerByIdUseCase(PlayerRepository playerRepository) {
+        return new GetPlayerByIdService(playerRepository);
     }
-
-    @Bean
-    public GetUpdatedBalanceUseCase getUpdatedBalanceUseCase(PlayerRepository playerRepository) {
-        return new GetUpdatedBalanceService(playerRepository);
-    }
-
-    @Bean
-    public CheckZeroBalanceUseCase checkZeroBalanceUseCase(PlayerRepository playerRepository) {
-        return new CheckZeroBalanceService(playerRepository);
-    }
-
+ 
     @Bean
     public GetBuildingStructureUseCase getBuildingStructureUseCase(BuildingRepository buildingRepository) {
         return new GetBuildingStructureService(buildingRepository);
     }
-
+ 
     @Bean
     public GetFloorTablesUseCase getFloorTablesUseCase(TableRepository tableRepository) {
         return new GetFloorTablesService(tableRepository);
     }
-
+ 
+    // — wallet (nuevos) —
     @Bean
-    public GetPlayerByIdUseCase getPlayerByIdUseCase(PlayerRepository playerRepository) {
-        return new GetPlayerByIdService(playerRepository);
+    public GetBalanceService getBalanceService(BalanceRepository balanceRepository) {
+        return new GetBalanceService(balanceRepository);
+    }
+ 
+    @Bean
+    public AddDailyBonusService addDailyBonusService(BalanceRepository balanceRepository,
+                                                     WalletTransactionRepository transactionRepository) {
+        return new AddDailyBonusService(balanceRepository, transactionRepository);
+    }
+ 
+    @Bean
+    public PlaceBetService placeBetService(BalanceRepository balanceRepository,
+                                           WalletTransactionRepository transactionRepository) {
+        return new PlaceBetService(balanceRepository, transactionRepository);
+    }
+ 
+    @Bean
+    public ReceiveWinService receiveWinService(BalanceRepository balanceRepository,
+                                               WalletTransactionRepository transactionRepository) {
+        return new ReceiveWinService(balanceRepository, transactionRepository);
+    }
+ 
+    @Bean
+    public RegisterLossService registerLossService(BalanceRepository balanceRepository,
+                                                   WalletTransactionRepository transactionRepository) {
+        return new RegisterLossService(balanceRepository, transactionRepository);
+    }
+ 
+    @Bean
+    public GetTransactionHistoryService getTransactionHistoryService(
+            WalletTransactionRepository transactionRepository) {
+        return new GetTransactionHistoryService(transactionRepository);
     }
 }
