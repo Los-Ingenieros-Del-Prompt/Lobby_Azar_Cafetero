@@ -44,3 +44,9 @@ jobs:
             --service ${{ env.ECS_SERVICE }} \
             --force-new-deployment \
             --region ${{ env.AWS_REGION }}
+
+          echo "Esperando a que el servicio ECS quede estable..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --region ${{ env.AWS_REGION }}
