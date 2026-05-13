@@ -10,7 +10,7 @@ import com.aguardientes.azarcafetero.lobby.domain.port.out.WalletTransactionRepo
 
 
 
-class ReceiveWinService {
+public class ReceiveWinService {
     private final BalanceRepository balanceRepository;
     private final WalletTransactionRepository transactionRepository;
     public ReceiveWinService(BalanceRepository b, WalletTransactionRepository t) {

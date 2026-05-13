@@ -8,7 +8,7 @@ import com.aguardientes.azarcafetero.lobby.domain.port.out.WalletTransactionRepo
 
 
 
-class PlaceBetService {
+public class PlaceBetService {
     private final BalanceRepository balanceRepository;
     private final WalletTransactionRepository transactionRepository;
     public PlaceBetService(BalanceRepository b, WalletTransactionRepository t) {

@@ -10,7 +10,7 @@ import com.aguardientes.azarcafetero.lobby.domain.port.out.WalletTransactionRepo
 
 
 
-class AddDailyBonusService {
+public class AddDailyBonusService {
     private final BalanceRepository balanceRepository;
     private final WalletTransactionRepository transactionRepository;
     public AddDailyBonusService(BalanceRepository b, WalletTransactionRepository t) {

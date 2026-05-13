@@ -8,7 +8,7 @@ import com.aguardientes.azarcafetero.lobby.domain.port.out.BalanceRepository;
 
 
 
-class GetBalanceService {
+public class GetBalanceService {
     private final BalanceRepository balanceRepository;
     public GetBalanceService(BalanceRepository balanceRepository) {
         this.balanceRepository = balanceRepository;

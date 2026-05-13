@@ -7,7 +7,7 @@ import com.aguardientes.azarcafetero.lobby.domain.port.out.WalletTransactionRepo
 import java.util.List;
 
 
-class GetTransactionHistoryService {
+public class GetTransactionHistoryService {
     private final WalletTransactionRepository transactionRepository;
     public GetTransactionHistoryService(WalletTransactionRepository t) {
         this.transactionRepository = t;

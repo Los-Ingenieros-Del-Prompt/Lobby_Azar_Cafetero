@@ -7,7 +7,7 @@ import com.aguardientes.azarcafetero.lobby.domain.port.out.BalanceRepository;
 import com.aguardientes.azarcafetero.lobby.domain.port.out.WalletTransactionRepository;
 
 
-class RegisterLossService {
+public class RegisterLossService {
     private final BalanceRepository balanceRepository;
     private final WalletTransactionRepository transactionRepository;
     public RegisterLossService(BalanceRepository b, WalletTransactionRepository t) {
