@@ -40,7 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/building/layout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/player/*/internal").permitAll()
                         // Endpoints de juego protegidos por X-Internal-Key (no JWT)
-                        .requestMatchers("/api/player/bet", "/api/player/win", "/api/player/loss")
+                        .requestMatchers(HttpMethod.POST, "/api/player/bet", "/api/player/win", "/api/player/loss")
                         .access((authentication, context) -> {
                             String key = context.getRequest().getHeader("X-Internal-Key");
                             return new AuthorizationDecision(internalApiKey.equals(key));
