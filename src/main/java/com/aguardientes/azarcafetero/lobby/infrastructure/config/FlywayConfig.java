@@ -17,6 +17,8 @@ public class FlywayConfig {
     public Flyway flyway(DataSource dataSource) {
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
+                .schemas("lobby")
+                .createSchemas(true)
                 .locations("classpath:db/migration")
                 .load();
         flyway.migrate();

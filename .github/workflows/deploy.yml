@@ -1,8 +1,13 @@
-name: Build & Deploy Lobby
+name: Build & Deploy azar-lobby (ECS Fargate)
 
 on:
   push:
     branches: [main]
+
+env:
+  AWS_REGION: us-east-1
+  ECS_CLUSTER: azar-cluster
+  ECS_SERVICE: azar-lobby
 
 jobs:
   build-and-deploy:
@@ -18,21 +23,30 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build y Push
+      - name: Build y Push a DockerHub
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/azar-lobby:latest
 
-      - name: Deploy en EC2
-        uses: appleboy/ssh-action@v1
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/azar-lobby:latest
-            docker stop azar-lobby || true
-            docker rm azar-lobby || true
-            docker run -d --name azar-lobby --restart unless-stopped -p 8082:8082 -e DB_URL="${{ secrets.DB_URL }}" -e DB_USERNAME="${{ secrets.DB_USERNAME }}" -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" ${{ secrets.DOCKERHUB_USERNAME }}/azar-lobby:latest
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Forzar nuevo deploy en ECS
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+
+          echo "Esperando a que el servicio ECS quede estable..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --region ${{ env.AWS_REGION }}
