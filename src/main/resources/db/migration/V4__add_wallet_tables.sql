@@ -11,7 +11,7 @@ CREATE TABLE transactions (
     amount          NUMERIC(15, 2) NOT NULL,
     type            VARCHAR(20) NOT NULL,
     description     VARCHAR(255),
-    created_at      TIMESTAMP DEFAULT NOW()
+    created_at      TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_transactions_user_id ON transactions(user_id);
