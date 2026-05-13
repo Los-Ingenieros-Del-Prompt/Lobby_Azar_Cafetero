@@ -42,7 +42,7 @@ public class Amount {
     }
 
     @Override
-    public int hashCode() { return value.hashCode(); }
+    public int hashCode() { return value.stripTrailingZeros().hashCode(); }
 
     @Override
     public String toString() { return value.toPlainString(); }
