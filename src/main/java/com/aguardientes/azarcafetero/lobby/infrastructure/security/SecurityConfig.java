@@ -50,7 +50,7 @@ public class SecurityConfig {
                             System.out.println(">>> match: " + match);
                             return new AuthorizationDecision(match);
                         })
-                        
+
                         // Todo lo demás requiere JWT
                         .anyRequest().authenticated()
                 )
