@@ -1,5 +1,4 @@
 package com.aguardientes.azarcafetero.lobby.infrastructure.security;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,52 +10,38 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    private final JwtFilter jwtFilter;
-
+private final JwtFilter jwtFilter;
     @Value("${internal.api.key}")
-    private String internalApiKey;
-
-    public SecurityConfig(JwtFilter jwtFilter) {
-        this.jwtFilter = jwtFilter;
+private String internalApiKey;
+public SecurityConfig(JwtFilter jwtFilter) {
+this.jwtFilter = jwtFilter;
     }
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Health check para ALB
+// Health check para ALB
                         .requestMatchers("/actuator/health").permitAll()
-                        // Swagger
+// Swagger
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        // Endpoints públicos
+// Endpoints públicos
                         .requestMatchers("/api/building/layout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/player/*/internal").permitAll()
-                        // Endpoints de juego protegidos por X-Internal-Key (no JWT)
+// Endpoints de juego protegidos por X-Internal-Key (no JWT)
                         .requestMatchers(HttpMethod.POST, "/api/player/bet", "/api/player/win", "/api/player/loss")
-                        
-                        .access((authentication, context) -> {
-                            String key = context.getRequest().getHeader("X-Internal-Key");
-                            boolean match = internalApiKey.equals(key);
-                            System.out.println(">>> X-Internal-Key recibida: [" + key + "]");
-                            System.out.println(">>> internalApiKey esperada: [" + internalApiKey + "]");
-                            System.out.println(">>> match: " + match);
-                            return new AuthorizationDecision(match);
-                        })
-
-                        // Todo lo demás requiere JWT
+                        .permitAll()
+// Todo lo demás requiere JWT
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((req, res, e) ->
-                                res.sendError(401, "Unauthorized: valid JWT required"))
+res.sendError(401, "Unauthorized: valid JWT required"))
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
