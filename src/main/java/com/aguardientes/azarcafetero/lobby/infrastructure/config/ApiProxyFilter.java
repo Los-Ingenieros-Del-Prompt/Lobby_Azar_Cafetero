@@ -1,5 +1,3 @@
-
-java
 package com.aguardientes.azarcafetero.lobby.infrastructure.config;
 
 import jakarta.servlet.FilterChain;
