@@ -5,6 +5,7 @@ import com.aguardientes.azarcafetero.lobby.domain.port.in.*;
 import com.aguardientes.azarcafetero.lobby.domain.service.*;
 import com.aguardientes.azarcafetero.lobby.infrastructure.security.JwtAuthDetails;
 import com.aguardientes.azarcafetero.lobby.infrastructure.sse.BalanceSseService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,11 +22,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/player")
 public class PlayerController {
 
-    // — use cases de identidad (ya existían) —
     private final GetPlayerIdentityUseCase getPlayerIdentityUseCase;
     private final GetPlayerByIdUseCase getPlayerByIdUseCase;
-
-    // — servicios de wallet (nuevos) —
     private final GetBalanceService getBalanceService;
     private final AddDailyBonusService addDailyBonusService;
     private final PlaceBetService placeBetService;
@@ -33,6 +31,9 @@ public class PlayerController {
     private final RegisterLossService registerLossService;
     private final GetTransactionHistoryService getTransactionHistoryService;
     private final BalanceSseService balanceSseService;
+
+    @Value("${internal.api.key}")
+    private String internalApiKey;
 
     public PlayerController(
             GetPlayerIdentityUseCase getPlayerIdentityUseCase,
@@ -55,10 +56,6 @@ public class PlayerController {
         this.balanceSseService = balanceSseService;
     }
 
-    // ──────────────────────────────────────────────────────────
-    // IDENTIDAD (existentes)
-    // ──────────────────────────────────────────────────────────
-
     @GetMapping("/identity")
     public ResponseEntity<PlayerIdentityDTO> getIdentity(
             Authentication auth,
@@ -72,7 +69,6 @@ public class PlayerController {
             jwtToken = authHeader.substring(7);
         }
 
-        // Obtener identidad + balance real desde tabla balances
         String userId = auth.getName();
         Balance balance = getBalanceService.execute(userId);
 
@@ -80,7 +76,6 @@ public class PlayerController {
                 userId, details.getName(), details.getAvatarUrl(), jwtToken
         );
 
-        // Override balance con el valor real de la tabla balances
         return ResponseEntity.ok(new PlayerIdentityDTO(
                 identity.getName(),
                 identity.getAvatar(),
@@ -93,10 +88,6 @@ public class PlayerController {
         Player player = getPlayerByIdUseCase.execute(playerId);
         return ResponseEntity.ok(PlayerDTO.from(player));
     }
-
-    // ──────────────────────────────────────────────────────────
-    // BALANCE (absorbidos de wallet)
-    // ──────────────────────────────────────────────────────────
 
     @GetMapping("/balance")
     public ResponseEntity<?> getBalance(Authentication auth) {
@@ -136,13 +127,13 @@ public class PlayerController {
         ));
     }
 
-    // ──────────────────────────────────────────────────────────
-    // TRANSACCIONES DE JUEGO (protegidas por X-Internal-Key)
-    // Llamadas únicamente por game-ws, brisca, parques
-    // ──────────────────────────────────────────────────────────
-
     @PostMapping("/bet")
-    public ResponseEntity<?> placeBet(@RequestBody GameTransactionRequest request) {
+    public ResponseEntity<?> placeBet(
+            @RequestBody GameTransactionRequest request,
+            @RequestHeader(value = "X-Internal-Key", required = false) String key) {
+        if (!internalApiKey.equals(key)) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
         Amount betAmount = new Amount(request.amount());
         WalletTransaction tx = placeBetService.execute(request.userId(), betAmount);
         Balance updated = getBalanceService.execute(request.userId());
@@ -157,7 +148,12 @@ public class PlayerController {
     }
 
     @PostMapping("/win")
-    public ResponseEntity<?> receiveWin(@RequestBody GameTransactionRequest request) {
+    public ResponseEntity<?> receiveWin(
+            @RequestBody GameTransactionRequest request,
+            @RequestHeader(value = "X-Internal-Key", required = false) String key) {
+        if (!internalApiKey.equals(key)) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
         Amount winAmount = new Amount(request.amount());
         WalletTransaction tx = receiveWinService.execute(request.userId(), winAmount);
         Balance updated = getBalanceService.execute(request.userId());
@@ -172,7 +168,12 @@ public class PlayerController {
     }
 
     @PostMapping("/loss")
-    public ResponseEntity<?> registerLoss(@RequestBody GameTransactionRequest request) {
+    public ResponseEntity<?> registerLoss(
+            @RequestBody GameTransactionRequest request,
+            @RequestHeader(value = "X-Internal-Key", required = false) String key) {
+        if (!internalApiKey.equals(key)) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
         Amount lossAmount = new Amount(request.amount());
         WalletTransaction tx = registerLossService.execute(request.userId(), lossAmount);
         return ResponseEntity.ok(Map.of(
