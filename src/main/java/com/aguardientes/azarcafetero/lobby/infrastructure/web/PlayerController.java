@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -90,16 +91,17 @@ public class PlayerController {
     }
 
     @GetMapping("/balance")
-    public ResponseEntity<?> getBalance(Authentication auth) {
-        String userId = auth.getName();
-        Balance balance = getBalanceService.execute(userId);
-        return ResponseEntity.ok(Map.of(
-                "userId", userId,
-                "amount", balance.getAmount().getValue(),
-                "canReceiveBonus", balance.canReceiveBonus(),
-                "nextBonusAt", balance.nextBonusAt() != null ? balance.nextBonusAt().toString() : null
-        ));
-    }
+public ResponseEntity<?> getBalance(Authentication auth) {
+    String userId = auth.getName();
+    Balance balance = getBalanceService.execute(userId);
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("userId", userId);
+    result.put("amount", balance.getAmount().getValue());
+    result.put("canReceiveBonus", balance.canReceiveBonus());
+    result.put("nextBonusAt", balance.nextBonusAt() != null ? balance.nextBonusAt().toString() : null);
+    return ResponseEntity.ok(result);
+}
 
     @GetMapping(value = "/balance/live", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter liveBalance(Authentication auth) {

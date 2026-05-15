@@ -21,6 +21,10 @@ import java.util.List;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
+    // Único endpoint donde aceptamos token vía query param, porque EventSource
+    // del navegador no permite enviar headers personalizados.
+    private static final String SSE_BALANCE_PATH = "/api/player/balance/live";
+
     private final SecretKey signingKey;
 
     public JwtFilter(@Value("${jwt.secret}") String secret) {
@@ -31,14 +35,14 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
 
-        if (header == null || !header.startsWith("Bearer ")) {
+        String token = extractToken(request);
+
+        if (token == null) {
+            // Sin token: dejamos que Spring Security decida si el endpoint lo permite o no.
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = header.substring(7);
 
         try {
             var claims = Jwts.parser()
@@ -63,5 +67,28 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Extrae el JWT desde el header Authorization.
+     * Como fallback, lo lee del query param `?token=...` SOLO para el endpoint SSE
+     * (EventSource del navegador no soporta headers personalizados).
+     */
+    private String extractToken(HttpServletRequest request) {
+        // 1. Header normal (caso por defecto: todos los endpoints REST)
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+
+        // 2. Query param, solo para el endpoint SSE
+        if (SSE_BALANCE_PATH.equals(request.getRequestURI())) {
+            String tokenParam = request.getParameter("token");
+            if (tokenParam != null && !tokenParam.isBlank()) {
+                return tokenParam;
+            }
+        }
+
+        return null;
     }
 }
