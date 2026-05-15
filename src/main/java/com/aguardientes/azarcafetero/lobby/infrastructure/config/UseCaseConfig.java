@@ -11,10 +11,11 @@ public class UseCaseConfig {
  
     // — identidad —
     @Bean
-    public GetPlayerIdentityUseCase getPlayerIdentityUseCase(PlayerRepository playerRepository) {
-        return new GetPlayerIdentityService(playerRepository);
+    public GetPlayerIdentityUseCase getPlayerIdentityUseCase(PlayerRepository playerRepository,
+                                                            BalanceRepository balanceRepository) {
+        return new GetPlayerIdentityService(playerRepository, balanceRepository);
     }
- 
+    
     @Bean
     public GetPlayerByIdUseCase getPlayerByIdUseCase(PlayerRepository playerRepository) {
         return new GetPlayerByIdService(playerRepository);
