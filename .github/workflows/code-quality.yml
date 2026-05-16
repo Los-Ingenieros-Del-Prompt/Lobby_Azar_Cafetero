@@ -89,7 +89,8 @@ jobs:
           mvn -B sonar:sonar \
             -Dsonar.projectKey=${{ inputs.sonar-project-key }} \
             -Dsonar.organization=${{ inputs.sonar-organization }} \
-            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
       - name: SonarCloud Quality Gate check
         uses: SonarSource/sonarqube-quality-gate-action@v1
