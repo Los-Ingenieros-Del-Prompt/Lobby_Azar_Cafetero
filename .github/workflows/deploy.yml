@@ -10,7 +10,18 @@ env:
   ECS_SERVICE: azar-lobby
 
 jobs:
+  code-quality:
+    uses: ./.github/workflows/code-quality.yml
+    with:
+      java-version: '21'
+      sonar-project-key: 'Los-Ingenieros-Del-Prompt_Lobby_Azar_Cafetero'
+      sonar-organization: 'los-ingenieros-del-prompt'
+      coverage-threshold: 80
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
   build-and-deploy:
+    needs: code-quality
     runs-on: ubuntu-latest
 
     steps:
@@ -45,8 +56,23 @@ jobs:
             --force-new-deployment \
             --region ${{ env.AWS_REGION }}
 
-          echo "Esperando a que el servicio ECS quede estable..."
+      - name: Esperar estabilidad del servicio
+        run: |
           aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }} \
             --region ${{ env.AWS_REGION }}
+
+      - name: Verificar tasks activas
+        run: |
+          aws ecs list-tasks \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service-name ${{ env.ECS_SERVICE }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Mostrar eventos recientes
+        run: |
+          aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query "services[0].events[0:5]"
