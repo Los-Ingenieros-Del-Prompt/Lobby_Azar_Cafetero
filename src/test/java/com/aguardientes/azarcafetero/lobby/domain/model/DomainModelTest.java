@@ -21,9 +21,9 @@ class DomainModelTest {
     }
 
     @Test
-    @DisplayName("Amount — negative value throws")
     void amount_negativeThrows() {
-        assertThrows(IllegalArgumentException.class, () -> new Amount(BigDecimal.valueOf(-1)));
+        BigDecimal negative = BigDecimal.valueOf(-1);
+        assertThrows(IllegalArgumentException.class, () -> new Amount(negative));
     }
 
     @Test
@@ -53,10 +53,10 @@ class DomainModelTest {
     // ── WalletTransaction ─────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("WalletTransaction — blank userId throws")
     void walletTransaction_blankUserIdThrows() {
+        Amount amount = Amount.of(100);
         assertThrows(IllegalArgumentException.class,
-                () -> new WalletTransaction("  ", Amount.of(100), TransactionType.BET, "desc"));
+                () -> new WalletTransaction("  ", amount, TransactionType.BET, "desc"));
     }
 
     @Test
@@ -67,10 +67,10 @@ class DomainModelTest {
     }
 
     @Test
-    @DisplayName("WalletTransaction — null type throws")
     void walletTransaction_nullTypeThrows() {
+        Amount amount = Amount.of(100);
         assertThrows(IllegalArgumentException.class,
-                () -> new WalletTransaction("user", Amount.of(100), null, "desc"));
+                () -> new WalletTransaction("user", amount, null, "desc"));
     }
 
     @Test
