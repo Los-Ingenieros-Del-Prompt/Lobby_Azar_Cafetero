@@ -14,6 +14,7 @@ import javax.sql.DataSource;
 public class FlywayConfig {
 
     @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "spring.flyway.enabled", havingValue = "true", matchIfMissing = true)
     public Flyway flyway(DataSource dataSource) {
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
@@ -29,13 +30,15 @@ public class FlywayConfig {
     @Bean
     public static BeanFactoryPostProcessor flywayEntityManagerDependency() {
         return factory -> {
-            BeanDefinition emf = factory.getBeanDefinition("entityManagerFactory");
-            String[] existing = emf.getDependsOn();
-            String[] updated = existing == null
-                    ? new String[]{"flyway"}
-                    : java.util.Arrays.copyOf(existing, existing.length + 1);
-            if (existing != null) updated[existing.length] = "flyway";
-            emf.setDependsOn(updated);
+            if (factory.containsBeanDefinition("flyway")) {
+                BeanDefinition emf = factory.getBeanDefinition("entityManagerFactory");
+                String[] existing = emf.getDependsOn();
+                String[] updated = existing == null
+                        ? new String[]{"flyway"}
+                        : java.util.Arrays.copyOf(existing, existing.length + 1);
+                if (existing != null) updated[existing.length] = "flyway";
+                emf.setDependsOn(updated);
+            }
         };
     }
 }
