@@ -43,8 +43,9 @@ class GetTransactionHistoryServiceTest {
 
         List<WalletTransaction> result = service.execute(USER_ID);
 
-        assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(tx1, tx2);
+        assertThat(result)
+            .hasSize(2)
+            .containsExactly(tx1, tx2);
     }
 
     @Test
