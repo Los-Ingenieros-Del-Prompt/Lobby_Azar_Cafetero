@@ -1,0 +1,264 @@
+package com.aguardientes.azarcafetero.lobby.domain.model;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@DisplayName("Extra domain coverage tests")
+class ExtraDomainCoverageTest {
+
+    // ── Amount additional ─────────────────────────────────────────────────────
+
+    @Test
+    void amount_add() {
+        Amount a = Amount.of(100);
+        Amount b = Amount.of(50);
+        assertEquals(Amount.of(150), a.add(b));
+    }
+
+    @Test
+    void amount_isGreaterThanOrEqual() {
+        Amount a = Amount.of(100);
+        assertTrue(a.isGreaterThanOrEqual(Amount.of(100)));
+        assertTrue(a.isGreaterThanOrEqual(Amount.of(50)));
+        assertFalse(a.isGreaterThanOrEqual(Amount.of(101)));
+    }
+
+    @Test
+    void amount_getValue() {
+        Amount a = Amount.of(42);
+        assertEquals(0, a.getValue().compareTo(BigDecimal.valueOf(42)));
+    }
+
+    // ── WalletTransaction additional ──────────────────────────────────────────
+
+    @Test
+    void walletTransaction_gettersFromMainConstructor() {
+        WalletTransaction tx = new WalletTransaction("user1", Amount.of(50), TransactionType.WIN, "desc");
+        assertNotNull(tx.getTransactionId());
+        assertEquals("user1", tx.getUserId());
+        assertEquals(Amount.of(50), tx.getAmount());
+        assertEquals(TransactionType.WIN, tx.getType());
+        assertEquals("desc", tx.getDescription());
+        assertNotNull(tx.getCreatedAt());
+    }
+
+    @Test
+    void walletTransaction_nullUserIdThrows() {
+        Amount a = Amount.of(50);
+        assertThrows(IllegalArgumentException.class,
+                () -> new WalletTransaction(null, a, TransactionType.BET, "desc"));
+    }
+
+    // ── Player additional ─────────────────────────────────────────────────────
+
+    @Test
+    void player_create_defaultsBalanceTo500() {
+        Player p = Player.create(UUID.randomUUID(), "user1");
+        assertEquals(0, p.getBalance().compareTo(new BigDecimal("500")));
+        assertEquals(PlayerStatus.OFFLINE, p.getStatus());
+    }
+
+    @Test
+    void player_gettersFromFrom() {
+        UUID id = UUID.randomUUID();
+        Player p = Player.from(id, "user1", "Display", "avatar.png", BigDecimal.TEN);
+        assertEquals(id, p.getId());
+        assertEquals("user1", p.getUsername());
+        assertEquals("Display", p.getDisplayName());
+        assertEquals("avatar.png", p.getAvatar());
+        assertEquals(BigDecimal.TEN, p.getBalance());
+    }
+
+    // ── Building ──────────────────────────────────────────────────────────────
+
+    @Test
+    void building_emptyConstructor() {
+        UUID id = UUID.randomUUID();
+        Building b = Building.create(id);
+        assertEquals(id, b.getId());
+        assertTrue(b.getFloors().isEmpty());
+    }
+
+    @Test
+    void building_constructorWithFloors() {
+        UUID id = UUID.randomUUID();
+        Floor floor = Floor.create(UUID.randomUUID(), "F1", "icon", "/r");
+        Building b = new Building(id, List.of(floor));
+        assertEquals(1, b.getFloors().size());
+        assertEquals(id, b.getId());
+    }
+
+    @Test
+    void building_addFloor() {
+        Building b = Building.create(UUID.randomUUID());
+        b.addFloor(Floor.create(UUID.randomUUID(), "F1", "i", "/r"));
+        b.addFloor(Floor.create(UUID.randomUUID(), "F2", "i", "/r"));
+        assertEquals(2, b.getFloors().size());
+    }
+
+    @Test
+    void building_getFloors_isUnmodifiable() {
+        Building b = Building.create(UUID.randomUUID());
+        b.addFloor(Floor.create(UUID.randomUUID(), "F1", "i", "/r"));
+        assertThrows(UnsupportedOperationException.class,
+                () -> b.getFloors().add(Floor.create(UUID.randomUUID(), "F2", "i", "/r")));
+    }
+
+    // ── Floor ─────────────────────────────────────────────────────────────────
+
+    @Test
+    void floor_gettersWork() {
+        UUID id = UUID.randomUUID();
+        Floor f = Floor.create(id, "Parques", "🎲", "/parques");
+        assertEquals(id, f.getFloorId());
+        assertEquals("Parques", f.getName());
+        assertEquals("🎲", f.getIcon());
+        assertEquals("/parques", f.getRoute());
+    }
+
+    // ── FloorDTO ──────────────────────────────────────────────────────────────
+
+    @Test
+    void floorDTO_from() {
+        Floor f = Floor.create(UUID.randomUUID(), "Brisca", "🃏", "/brisca");
+        FloorDTO dto = FloorDTO.from(f);
+        assertEquals("Brisca", dto.getName());
+        assertEquals("🃏", dto.getIcon());
+        assertEquals("/brisca", dto.getRoute());
+    }
+
+    @Test
+    void floorDTO_directConstructor() {
+        FloorDTO dto = new FloorDTO("X", "i", "/x");
+        assertEquals("X", dto.getName());
+        assertEquals("i", dto.getIcon());
+        assertEquals("/x", dto.getRoute());
+    }
+
+    // ── BuildingStructureDTO ──────────────────────────────────────────────────
+
+    @Test
+    void buildingStructureDTO_from() {
+        Building b = Building.create(UUID.randomUUID());
+        b.addFloor(Floor.create(UUID.randomUUID(), "F1", "i", "/r"));
+        BuildingStructureDTO dto = BuildingStructureDTO.from(b);
+        assertEquals(1, dto.getFloors().size());
+        assertEquals("F1", dto.getFloors().get(0).getName());
+    }
+
+    @Test
+    void buildingStructureDTO_directConstructor() {
+        FloorDTO f = new FloorDTO("F1", "i", "/r");
+        BuildingStructureDTO dto = new BuildingStructureDTO(List.of(f));
+        assertEquals(1, dto.getFloors().size());
+    }
+
+    @Test
+    void buildingStructureDTO_floorsIsUnmodifiable() {
+        BuildingStructureDTO dto = new BuildingStructureDTO(List.of(new FloorDTO("F", "i", "/r")));
+        assertThrows(UnsupportedOperationException.class,
+                () -> dto.getFloors().add(new FloorDTO("F2", "i", "/r")));
+    }
+
+    // ── Table ─────────────────────────────────────────────────────────────────
+
+    @Test
+    void table_factoryAndGetters() {
+        UUID tableId = UUID.randomUUID();
+        UUID floorId = UUID.randomUUID();
+        Table t = Table.create(tableId, floorId, "Mesa 1", new BigDecimal("100"), TableState.ACTIVE, 3);
+        assertEquals(tableId, t.getTableId());
+        assertEquals(floorId, t.getFloorId());
+        assertEquals("Mesa 1", t.getName());
+        assertEquals(0, t.getMinBet().compareTo(new BigDecimal("100")));
+        assertEquals(TableState.ACTIVE, t.getState());
+        assertEquals(3, t.getPlayerCount());
+    }
+
+    // ── TableDTO ──────────────────────────────────────────────────────────────
+
+    @Test
+    void tableDTO_gettersWork() {
+        UUID id = UUID.randomUUID();
+        TableDTO dto = new TableDTO(id, "Mesa", new BigDecimal("50"), TableState.PAUSED, 2);
+        assertEquals(id, dto.getId());
+        assertEquals("Mesa", dto.getName());
+        assertEquals(0, dto.getMinBet().compareTo(new BigDecimal("50")));
+        assertEquals(TableState.PAUSED, dto.getState());
+        assertEquals(2, dto.getPlayerCount());
+    }
+
+    // ── PlayerIdentityDTO ─────────────────────────────────────────────────────
+
+    @Test
+    void playerIdentityDTO_gettersWork() {
+        PlayerIdentityDTO dto = new PlayerIdentityDTO("Karol", "avatar.png", new BigDecimal("500"));
+        assertEquals("Karol", dto.getName());
+        assertEquals("avatar.png", dto.getAvatar());
+        assertEquals(0, dto.getBalance().compareTo(new BigDecimal("500")));
+    }
+
+    // ── PlayerDTO additional ──────────────────────────────────────────────────
+
+    @Test
+    void playerDTO_from() {
+        Player p = Player.from(UUID.randomUUID(), "user1", "Display", "avatar.png", BigDecimal.TEN);
+        PlayerDTO dto = PlayerDTO.from(p);
+        assertEquals("user1", dto.getUsername());
+        assertEquals("Display", dto.getDisplayName());
+        assertEquals("avatar.png", dto.getAvatar());
+        assertEquals(BigDecimal.TEN, dto.getBalance());
+    }
+
+    @Test
+    void playerDTO_fullConstructor() {
+        UUID id = UUID.randomUUID();
+        PlayerDTO dto = new PlayerDTO(id, "u", "d", "a", BigDecimal.ONE);
+        assertEquals(id, dto.getId());
+    }
+
+    // ── Enums ─────────────────────────────────────────────────────────────────
+
+    @Test
+    void playerStatus_values() {
+        assertEquals(3, PlayerStatus.values().length);
+        assertEquals(PlayerStatus.ONLINE, PlayerStatus.valueOf("ONLINE"));
+        assertEquals(PlayerStatus.IN_ROOM, PlayerStatus.valueOf("IN_ROOM"));
+        assertEquals(PlayerStatus.OFFLINE, PlayerStatus.valueOf("OFFLINE"));
+    }
+
+    @Test
+    void transactionType_values() {
+        assertEquals(4, TransactionType.values().length);
+        assertEquals(TransactionType.BONUS, TransactionType.valueOf("BONUS"));
+        assertEquals(TransactionType.WIN, TransactionType.valueOf("WIN"));
+        assertEquals(TransactionType.LOSS, TransactionType.valueOf("LOSS"));
+        assertEquals(TransactionType.BET, TransactionType.valueOf("BET"));
+    }
+
+    @Test
+    void tableState_values() {
+        assertEquals(3, TableState.values().length);
+        assertEquals(TableState.ACTIVE, TableState.valueOf("ACTIVE"));
+        assertEquals(TableState.PAUSED, TableState.valueOf("PAUSED"));
+        assertEquals(TableState.CLOSED, TableState.valueOf("CLOSED"));
+    }
+
+    // ── WalletTransaction createdAt sanity ────────────────────────────────────
+
+    @Test
+    void walletTransaction_createdAtIsRecent() {
+        LocalDateTime before = LocalDateTime.now().minusSeconds(1);
+        WalletTransaction tx = new WalletTransaction("user1", Amount.of(10), TransactionType.BET, "d");
+        LocalDateTime after = LocalDateTime.now().plusSeconds(1);
+        assertTrue(tx.getCreatedAt().isAfter(before));
+        assertTrue(tx.getCreatedAt().isBefore(after));
+    }
+}

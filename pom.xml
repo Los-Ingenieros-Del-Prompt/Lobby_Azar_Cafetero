@@ -14,38 +14,48 @@
 	<name>lobby</name>
 	<description>Lobby for Azarcafetero</description>
 	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+	<licenses><license/></licenses>
+	<developers><developer/></developers>
+	<scm><connection/><developerConnection/><tag/><url/></scm>
+
 	<properties>
 		<java.version>21</java.version>
+
 		<!-- Sonar -->
 		<sonar.organization>los-ingenieros-del-prompt</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.coverage.jacoco.xmlReportPaths>
 			${project.build.directory}/site/jacoco/jacoco.xml
 		</sonar.coverage.jacoco.xmlReportPaths>
+
+		<!-- ✅ Sonar lee estas propiedades desde el pom.xml, NO desde sonar-project.properties -->
+		<sonar.coverage.exclusions>
+			**/LobbyApplication.java,
+			**/infrastructure/persistence/entity/**,
+			**/infrastructure/persistence/repository/**,
+			**/infrastructure/persistence/adapter/**,
+			**/infrastructure/config/**,
+			**/infrastructure/security/**,
+			**/infrastructure/sse/**,
+			**/infrastructure/web/GameTransactionRequest.java
+		</sonar.coverage.exclusions>
+
+		<sonar.exclusions>
+			**/infrastructure/persistence/entity/**,
+			**/infrastructure/persistence/repository/**,
+			**/infrastructure/config/**
+		</sonar.exclusions>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -55,35 +65,29 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.8.5</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.18.42</version>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
@@ -105,7 +109,6 @@
 			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -121,7 +124,6 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -151,22 +153,13 @@
 
 				<configuration>
 					<excludes>
-						<!-- Clase main -->
 						<exclude>**/LobbyApplication.class</exclude>
-						<!-- DTOs y modelos (sin lógica) -->
-						<!-- NOTA: Se quitaron los modelos de dominio para que JaCoCo mida su lógica -->
-						<!-- Entidades JPA -->
 						<exclude>**/infrastructure/persistence/entity/**</exclude>
-						<!-- Repositorios Spring Data (interfaces) -->
 						<exclude>**/infrastructure/persistence/repository/**</exclude>
-						<!-- Adaptadores de infraestructura (traducción simple) -->
 						<exclude>**/infrastructure/persistence/adapter/**</exclude>
-						<!-- Configuración de infraestructura -->
 						<exclude>**/infrastructure/config/**</exclude>
-						<!-- Seguridad y SSE (filtros y servicios técnicos) -->
 						<exclude>**/infrastructure/security/**</exclude>
 						<exclude>**/infrastructure/sse/**</exclude>
-						<!-- Request DTOs de la capa web -->
 						<exclude>**/infrastructure/web/GameTransactionRequest.class</exclude>
 					</excludes>
 				</configuration>
@@ -180,11 +173,11 @@
 					</execution>
 
 					<execution>
-					    <id>report</id>
-					    <phase>verify</phase>
-					    <goals>
-					        <goal>report</goal>
-					    </goals>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
 					</execution>
 
 					<execution>
@@ -196,7 +189,6 @@
 						<configuration>
 							<excludes>
 								<exclude>**/LobbyApplication.class</exclude>
-								<!-- NOTA: Se quitaron los modelos de dominio para que JaCoCo mida su lógica -->
 								<exclude>**/infrastructure/persistence/entity/**</exclude>
 								<exclude>**/infrastructure/persistence/repository/**</exclude>
 								<exclude>**/infrastructure/persistence/adapter/**</exclude>
